@@ -1,0 +1,2 @@
+how to build mechanism to evaluate the output(feed-back loops) and the input (context) 
+            

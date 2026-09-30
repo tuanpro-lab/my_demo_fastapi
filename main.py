@@ -4,8 +4,6 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from google import genai
 
-
-
 app = FastAPI(title="AI Tóm Tắt Văn Bản Của Tôi Sử Dụng Gemini")
 class Item(BaseModel) :
     text : str
