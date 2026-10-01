@@ -1,24 +1,16 @@
 import os
 import json
-os.environ["GEMINI_API_KEY"] = "AQ.Ab8RN6LWYfD9dNCG4clPN65SJui_Y0vLXzboz71JjGBAD63irw"
-os.environ["TAVILY_API_KEY"] = "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"
-memory_file = "longterm.json"
+from dotenv import load_dotenv
+load_dotenv()
 from tavily import TavilyClient 
 from google import genai
 from google.genai import types
-
+memory_file = "longterm.json"
 # 1. Initialize the client (uses GEMINI_API_KEY environment variable)
-client = genai.Client()
-tavily = TavilyClient()
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 
 # 2. Define a tool function with type hints and docstring
-def web_search(query : str) -> str:
-    ''' Search the web using current information using Tavily'''
-    results = tavily.search(query=query, max_results= 2)
-    output = []
-    for r in results :
-        output.append(f"- {r['title']}: {r['content'][:300]}")
-    return "\n".join(output)
 def recall_memories() : 
     """ Recall some necessary fact in long_term memory """
     memories = load_long_term_memory() 

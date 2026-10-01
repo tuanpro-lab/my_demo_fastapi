@@ -1,5 +1,4 @@
+''' save files for one session'''
 class WorkingMemory : 
-    _word : str 
-    _meanings : list[str] 
-    _examples : list[str]
+    
     
