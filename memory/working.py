@@ -10,18 +10,19 @@ class SessionChat :
         self.session_id = session_id
         self.file_path = os.path.join(storage_dir,f"{session_id}.json")
         os.makedirs(storage_dir,exist_ok= True) 
-        self.history = self._loadHistory()
+        self.context = self._loadHistory()
         self.currentchat = [] 
-    def _loadHistory(self,previous_session = 1) -> list  :
+    def _loadHistory(self,previous_session = 1) -> str  :
         if os.path.exists(self.file_path) :
             with open(self.file_path,"r",encoding="utf-8") as f : 
                 summaries = json.load(f) 
             recent =  summaries[:previous_session]
-            res = []
+            current_context = ""
             for s in recent : 
-                res.append()
-
-        return []
+                current_context += f"main topics: {', '.join(s.get('main_topics', []))}." + " "
+                current_context += f"pending tasks: {', '.join(s.get('pending_tasks', []))}." 
+            return current_context 
+        return ""
     def startSession(self) :  
         requests = input(str())
         response = client.models.generate_content(
@@ -43,9 +44,9 @@ class SessionChat :
             conversation_text += f"{content}\n\n"
         prompt=f"""Summarize conversation_text into a structured Json format with these fiels : 
         - main_topics : What are the main topics that I want to dicuss(list of strings)
-        - User's facts : the important things that user shares about themselves(list of strings) -> change to procedural memory 
-        - Conclusions : decisions or conclusions reached(list of strings)
-        - Pending tasks : unfinished tasks or follow-ups needed(list of strings)
+        - user's facts : the important things that user shares about themselves(list of strings) -> change to procedural memory 
+        - conclusions : decisions or conclusions reached(list of strings)
+        - pending tasks : unfinished tasks or follow-ups needed(list of strings)
         return only valid Json, no explanation
         Conversation : {conversation_text}
         """
@@ -67,11 +68,9 @@ class SessionChat :
     def _saveHistory(self) :
         summaries = []
         if os.path.exists(self.file_path) :
-            with open(self.file_path,"r",encoding= "utf-8") as f :
-                summary = json.load(f)
-        summaries.append(summary)
-        with open(self.file_path,"w",encoding = "utf-8") as f : 
-            json.dump(summaries,f,ensure_ascii=True,indent=2)
+            summaries.append(self.summary_chat())
+            with open(self.file_path,"w",encoding = "utf-8") as f : 
+                json.dump(summaries,f,ensure_ascii=True,indent=2)
 
         
     
