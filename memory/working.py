@@ -1,14 +1,16 @@
 ''' save files for one session'''
 import os 
 import json
+import uuid
 from dotenv import load_dotenv
 from openai import OpenAI
 client = OpenAI(api_key=os.getenv("AGENTIC_API_KEY"))
 client_1 = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
+# use files for storing all conversation chats with AI and db for storing the most important info
 class SessionChat :
-    def __init__(self,session_id : str, storage_dir : str = "./sessions"):
+    def __init__(self,session_id = str(uuid.uuid4()) , storage_dir : str = "./sessions"):
         self.session_id = session_id
-        self.file_path = os.path.join(storage_dir,f"{session_id}.json")
+        self.file_path = os.path.join(storage_dir,f"{self.session_id}.json")
         os.makedirs(storage_dir,exist_ok= True) 
         self.context = self._loadHistory()
         self.currentchat = [] 
@@ -44,7 +46,7 @@ class SessionChat :
             conversation_text += f"{content}\n\n"
         prompt=f"""Summarize conversation_text into a structured Json format with these fiels : 
         - main_topics : What are the main topics that I want to dicuss(list of strings)
-        - user's facts : the important things that user shares about themselves(list of strings) -> change to procedural memory 
+        - user's facts : the important things that user shares about themselves(list of strings).If user don't provide anything . return [] 
         - conclusions : decisions or conclusions reached(list of strings)
         - pending tasks : unfinished tasks or follow-ups needed(list of strings)
         return only valid Json, no explanation
