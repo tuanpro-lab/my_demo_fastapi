@@ -1,7 +1,11 @@
 ''' often need vector databases'''
 import sqlite3
 import uuid
+from dataclasses import dataclass,field
+import numpy as np
 from datetime import datetime,timezone
+from typing import Sequence
+from sentence_transformers import SentenceTransformer
 # define connection and cursor 
 class EpisodicMemory : 
     def __init__(self,path_db = "memory.db"):
@@ -78,6 +82,34 @@ class EpisodicMemory :
                 """
             )
             return history
-        
+    def retrieve(self,query,session_id,limit : int = 5,)
+
+class SentenceTransformerEmbedder : 
+    """Local embeddings using Sentence Transformers."""
+
+    def __init__(self,base_model ="paraphrase-multilingual-MiniLM-L12-v2" ):
+        self.model_name = base_model
+        self.model = SentenceTransformer(base_model)
+    def encode(self,text:Sequence[str]) -> np.ndarray :
+        vectors = self.model.encode(list(text),convert_to_numpy = True,normalize_embeddings = True,
+                                show_progress_bar = False,) 
+        return np.asarray(vectors,dtype=np.float32)
+''' define the evaluation metrics '''
+@dataclass
+class RetrieveEpisode : 
+    episodes : dict 
+    score: float 
+    semantic_score: float 
+    lexical_score : float 
+    recency_score : float 
+'''///// '''
+
+""" calculate cosine similarity between two vectors"""
+def cosine_smilarity(vec1, vec2) :
+    dot_product = np.dot(vec1,vec2)
+    norm_vec1 = np.linalg.norm(vec1)
+    norm_vec2 = np.linalg.norm(vec2)
+    return  dot_product / (norm_vec1 * norm_vec2)
+
         
         
