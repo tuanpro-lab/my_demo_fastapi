@@ -1,40 +1,31 @@
 ''' save files for one session'''
+import episodic
+from datetime import datetime,timezone
 import os 
+import request 
 import json
 import uuid
 from dotenv import load_dotenv
-from openai import OpenAI
-client = OpenAI(api_key=os.getenv("AGENTIC_API_KEY"))
-client_1 = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
 # use files for storing all conversation chats with AI and db for storing the most important info
+# store short amount of context updating immediately 
 class SessionChat :
     def __init__(self,session_id = str(uuid.uuid4()) , storage_dir : str = "./sessions"):
         self.session_id = session_id
         self.file_path = os.path.join(storage_dir,f"{self.session_id}.json")
         os.makedirs(storage_dir,exist_ok= True) 
-        self.context = self._loadHistory()
+        self.context = self._load_previousChat()
         self.currentchat = [] 
-    def _loadHistory(self,previous_session = 1) -> str  :
-        if os.path.exists(self.file_path) :
-            with open(self.file_path,"r",encoding="utf-8") as f : 
-                summaries = json.load(f) 
-            recent =  summaries[:previous_session]
+    def _load_previousChat(self) -> str  :
+        try : 
+            recent = episodic.EpisodicMemory().get_important_feature(self.session_id)
             current_context = ""
             for s in recent : 
                 current_context += f"main topics: {', '.join(s.get('main_topics', []))}." + " "
                 current_context += f"pending tasks: {', '.join(s.get('pending_tasks', []))}." 
             return current_context 
-        return ""
-    def startSession(self) :  
-        requests = input(str())
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=requests,
-            config=types.GenerateContentConfig(
-                tools=[],
-            ),
-        )
-        self.currentchat.append((f"{requests}",f"{response.text}"))
+        except Exception :
+            print("SESSION DOESN'T HAVE PREVIOUS CHAT")
+            return ""
     def summary_chat(self) : 
         ''' compact all chat session in 200-300 meaning words that can be easily to store and retrieve.
         What techniques often use to this ?  
@@ -73,6 +64,15 @@ class SessionChat :
             summaries.append(self.summary_chat())
             with open(self.file_path,"w",encoding = "utf-8") as f : 
                 json.dump(summaries,f,ensure_ascii=True,indent=2)
+    def startSession(self) :  
+        prompt = input(str())
+        current_time = datetime.now(timezone.utc).isoformat()
+        """ each conversation store filepath"""
+        response = request.post()
+        with open(self.file_path,"w",encoding="utf-8") as f : 
+            one_chat = [current_time,prompt,response]
+            f.write("\n".join(one_chat))
+       
 
         
     

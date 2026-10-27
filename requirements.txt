@@ -1,6 +1,6 @@
 fastapi
 uvicorn 
-google-genai
 pydantic
 openai 
 sentence-transformers
+ollama
