@@ -104,11 +104,17 @@ class SentenceTransformerEmbedder :
 
     def __init__(self,base_model ="paraphrase-multilingual-MiniLM-L12-v2" ):
         self.model_name = base_model
+        self.top_k = 5
         self.model = SentenceTransformer(base_model)
     def encode(self,text:Sequence[str]) -> np.ndarray :
         vectors = self.model.encode(list(text),convert_to_numpy = True,normalize_embeddings = True,
                                 show_progress_bar = False,) 
         return np.asarray(vectors,dtype=np.float32)
+    def semantic_search_manual(self,mostK_relevant,querys : list[str]) : 
+        for query in querys :
+            query_embedder = self.encode(query)
+            
+            similarity_score = self.model.similarity(query_embedder,)
 ''' define the evaluation metrics '''
 @dataclass
 class RetrieveEpisode : 
