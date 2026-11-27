@@ -4,3 +4,4 @@ pydantic
 openai 
 sentence-transformers
 ollama
+pip install ollama pymupdf python-docx

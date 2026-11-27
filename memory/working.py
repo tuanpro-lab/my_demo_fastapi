@@ -1,5 +1,8 @@
 ''' save files for one session'''
 import episodic
+import re 
+import fitz
+import docx 
 from datetime import datetime,timezone
 import atexit
 import os 
@@ -12,13 +15,19 @@ url = "http://localhost:11434/api/generate"
 think_model ="deepseek-r1:1.5b"
 chat_model = "qwen2.5vl:3b"
 class SessionChat :
+    _current_state: str 
+    _topic_state : str 
+    _user_intent : str 
+    _decision_state : str 
+    _pending_questions : str 
     def __init__(self,session_id = str(uuid.uuid4()) , storage_dir : str = "./sessions"):
         self.session_id = session_id
         self.file_path = os.path.join(storage_dir,f"{self.session_id}.json")
         os.makedirs(storage_dir,exist_ok= True) 
-        self.context = self._load_previousChat()
+        self.context = self.load_previousChat()
         self.currentchat = [] 
-    def _load_previousChat(self) -> str  :
+        
+    def load_previousChat(self) -> str  :
         try : 
             recent = episodic.EpisodicMemory().get_important_feature(self.session_id)
             current_context = ""
@@ -53,7 +62,6 @@ class SessionChat :
             "format" : json,
         })
         try : 
-
             structured = {res}
         except json.JSONDecodeError as e : 
             return e.msg
@@ -62,7 +70,7 @@ class SessionChat :
             **structured
         }
         return session_data
-    def _saveHistory(self) :
+    def saveHistory(self) :
         summaries = []
         if os.path.exists(self.file_path) :
             summaries.append(self.summary_chat())
@@ -75,6 +83,8 @@ class SessionChat :
         while True :
             prompt = input(str())
             current_time = datetime.now(timezone.utc).isoformat()
+            dectected_files = self.detect_doc(prompt) 
+
             """ each conversation store filepath"""
             response = requests.post(url,json = {
                 "model" : chat_model,
@@ -85,7 +95,7 @@ class SessionChat :
                 one_chat = [current_time,prompt,response]
                 f.write("\n".join(one_chat))
     def manage_context(self) : 
-        pass 
+        """context window for agentic AI optimizing for tasks require chain of thoughts""" 
 
 
 if __name__=="__main__" : 
